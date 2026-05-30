@@ -3,6 +3,8 @@ import { supabase } from './supabase'
 
 export default function App() {
 
+  const [filter,setFilter] = useState("all")
+
   const [lands,setLands] = useState([])
   const [transactions,setTransactions] = useState([])
   const [showModal,setShowModal] = useState(false)
@@ -81,16 +83,53 @@ export default function App() {
 
   const filteredLands = lands.filter(row => {
 
-    const surveyMatch =
-      row.SurveyNo?.toLowerCase()
-      .includes(surveySearch.toLowerCase())
+  const surveyMatch =
+    row.SurveyNo?.toLowerCase()
+    .includes(surveySearch.toLowerCase())
 
-    const khataMatch =
-      row.KhataNo?.toLowerCase()
-      .includes(khataSearch.toLowerCase())
+  const khataMatch =
+    row.KhataNo?.toLowerCase()
+    .includes(khataSearch.toLowerCase())
 
-    return surveyMatch && khataMatch
-  })
+  let categoryMatch = true
+
+  switch(filter){
+
+    case "govt":
+      categoryMatch = row.isGovt
+      break
+
+    case "notrans":
+      categoryMatch = row.isNoTrans
+      break
+
+    case "trans":
+      categoryMatch = row.TransDetails
+      break
+
+    case "fav":
+      categoryMatch = row.isFav
+      break
+
+    case "error":
+      categoryMatch =
+        row.status &&
+        !row.TransDetails &&
+        !row.isGovt &&
+        !row.isNoTrans
+      break
+
+    default:
+      categoryMatch = true
+  }
+
+  return (
+    surveyMatch &&
+    khataMatch &&
+    categoryMatch
+  )
+
+})
 
   const govt =
     lands.filter(x=>x.isGovt).length
@@ -168,6 +207,44 @@ export default function App() {
         />
 
       </div>
+      
+      
+      <div className="filter-bar">
+
+        <select
+          value={filter}
+          onChange={(e)=>setFilter(e.target.value)}
+        >
+
+          <option value="all">
+            All Records
+          </option>
+
+          <option value="govt">
+            Govt Lands
+          </option>
+
+          <option value="notrans">
+            No Transaction Lands
+          </option>
+
+          <option value="trans">
+            Transaction Lands
+          </option>
+
+          <option value="error">
+             Error Records
+          </option>
+
+          <option value="fav">
+             Favorite Lands
+          </option>
+
+        </select>
+
+      </div>
+
+
 
       <table>
 
