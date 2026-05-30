@@ -16,7 +16,7 @@ export default function App() {
     const { data } = await supabase
       .from('SearchEC2')
       .select('*')
-      .order('id',{ascending:false})
+      .order('id',{ascending:true})
 
     setLands(data || [])
   }
@@ -37,6 +37,7 @@ export default function App() {
       .from('TransDetails')
       .select('*')
       .in('id',row.trans_table_record_IDs)
+      .order('id',{ascending:true})
 
     setTransactions(data || [])
   }
