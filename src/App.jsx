@@ -5,7 +5,10 @@ export default function App() {
 
   const [lands,setLands] = useState([])
   const [transactions,setTransactions] = useState([])
-  const [selected,setSelected] = useState(null)
+  const [showModal,setShowModal] = useState(false)
+
+  const [surveySearch,setSurveySearch] = useState("")
+  const [khataSearch,setKhataSearch] = useState("")
 
   useEffect(()=>{
     loadLands()
@@ -23,13 +26,12 @@ export default function App() {
 
   async function showTransactions(row){
 
-    setSelected(row)
-
     if(
       !row.trans_table_record_IDs ||
       row.trans_table_record_IDs.length===0
     ){
       setTransactions([])
+      setShowModal(true)
       return
     }
 
@@ -40,6 +42,7 @@ export default function App() {
       .order('id',{ascending:true})
 
     setTransactions(data || [])
+    setShowModal(true)
   }
 
   async function toggleFav(row){
@@ -54,6 +57,41 @@ export default function App() {
     loadLands()
   }
 
+  function getStatus(row){
+
+    if(row.TransDetails)
+      return "success"
+
+    if(row.isGovt)
+      return "govt"
+
+    if(row.isNoTrans)
+      return "notrans"
+
+    if(
+      row.status &&
+      !row.TransDetails &&
+      !row.isGovt &&
+      !row.isNoTrans
+    )
+      return "error"
+
+    return "pending"
+  }
+
+  const filteredLands = lands.filter(row => {
+
+    const surveyMatch =
+      row.SurveyNo?.toLowerCase()
+      .includes(surveySearch.toLowerCase())
+
+    const khataMatch =
+      row.KhataNo?.toLowerCase()
+      .includes(khataSearch.toLowerCase())
+
+    return surveyMatch && khataMatch
+  })
+
   const govt =
     lands.filter(x=>x.isGovt).length
 
@@ -66,7 +104,17 @@ export default function App() {
   const fav =
     lands.filter(x=>x.isFav).length
 
+  const errors =
+    lands.filter(
+      x =>
+      x.status &&
+      !x.TransDetails &&
+      !x.isGovt &&
+      !x.isNoTrans
+    ).length
+
   return(
+
     <div className="container">
 
       <h1>Land Dashboard</h1>
@@ -74,29 +122,50 @@ export default function App() {
       <div className="cards">
 
         <div className="card">
-          Total<br/>
-          {lands.length}
+          <h3>{lands.length}</h3>
+          Total Lands
         </div>
 
-        <div className="card">
-          Govt<br/>
-          {govt}
+        <div className="card govt-card">
+          <h3>{govt}</h3>
+          Govt Lands
         </div>
 
-        <div className="card">
-          No Transactions<br/>
-          {noTrans}
+        <div className="card no-card">
+          <h3>{noTrans}</h3>
+          No Transactions
         </div>
 
-        <div className="card">
-          Transactions<br/>
-          {trans}
+        <div className="card trans-card">
+          <h3>{trans}</h3>
+          Transactions
         </div>
 
-        <div className="card">
-          Favorites<br/>
-          {fav}
+        <div className="card fav-card">
+          <h3>{fav}</h3>
+          Favorites
         </div>
+
+        <div className="card error-card">
+          <h3>{errors}</h3>
+          Errors
+        </div>
+
+      </div>
+
+      <div className="search-bar">
+
+        <input
+          placeholder="Search Survey No"
+          value={surveySearch}
+          onChange={(e)=>setSurveySearch(e.target.value)}
+        />
+
+        <input
+          placeholder="Search Khata No"
+          value={khataSearch}
+          onChange={(e)=>setKhataSearch(e.target.value)}
+        />
 
       </div>
 
@@ -105,100 +174,150 @@ export default function App() {
         <thead>
           <tr>
             <th>Fav</th>
+            <th>ID</th>
             <th>Survey No</th>
             <th>Khata No</th>
-            <th>Category</th>
+            <th>Status</th>
             <th>Transactions</th>
           </tr>
         </thead>
 
         <tbody>
 
-          {lands.map(row=>(
+          {filteredLands.map(row=>{
+
+            const status = getStatus(row)
+
+            return(
+
             <tr
               key={row.id}
-              onClick={()=>showTransactions(row)}
+              className={
+                status==="error"
+                ? "error-row"
+                : ""
+              }
             >
 
               <td>
+
                 <button
-                  onClick={(e)=>{
-                    e.stopPropagation()
-                    toggleFav(row)
-                  }}
+                  className="fav-btn"
+                  onClick={()=>toggleFav(row)}
                 >
                   {row.isFav ? '⭐':'☆'}
                 </button>
+
               </td>
 
+              <td>{row.id}</td>
+
               <td>{row.SurveyNo}</td>
+
               <td>{row.KhataNo}</td>
 
               <td>
 
-                {row.isGovt
-                  ? 'Govt Land'
-                  : row.isNoTrans
-                  ? 'No Transactions'
-                  : 'Transactions Found'}
+                <span className={`badge ${status}`}>
+
+                  {status==="success" && "Transactions Found"}
+
+                  {status==="govt" && "Govt Land"}
+
+                  {status==="notrans" && "No Transactions"}
+
+                  {status==="error" && "Error"}
+
+                  {status==="pending" && "Pending"}
+
+                </span>
 
               </td>
 
               <td>
-                {row.trans_table_record_IDs?.length || 0}
+
+                {
+                  row.trans_table_record_IDs?.length > 0 ?
+
+                  <button
+                    className="trans-btn"
+                    onClick={() =>
+                      showTransactions(row)
+                    }
+                  >
+                    {row.trans_table_record_IDs.length}
+                  </button>
+
+                  :
+
+                  "-"
+                }
+
               </td>
 
             </tr>
-          ))}
+
+            )
+          })}
 
         </tbody>
 
       </table>
 
-      {selected && (
+      {
+        showModal && (
 
-        <div>
+        <div className="modal-overlay">
 
-          <h2>
+          <div className="modal">
 
-            Survey No :
-            {selected.SurveyNo}
+            <div className="modal-header">
 
-          </h2>
+              <h2>Transaction History</h2>
 
-          <h3>
-            Transaction History
-          </h3>
+              <button
+                onClick={() =>
+                  setShowModal(false)
+                }
+              >
+                Close
+              </button>
 
-          <table>
+            </div>
 
-            <thead>
-              <tr>
-                <th>S No</th>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Nature</th>
-                <th>Doc No</th>
-              </tr>
-            </thead>
+            <table>
 
-            <tbody>
+              <thead>
 
-            {transactions.map(t=>(
-              <tr key={t.id}>
+                <tr>
+                  <th>S No</th>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Nature</th>
+                  <th>Doc No</th>
+                </tr>
 
-                <td>{t["S No"]}</td>
-                <td>{t.TransDate}</td>
-                <td>{t.Description}</td>
-                <td>{t.nature_of_deed}</td>
-                <td>{t.doc_no}</td>
+              </thead>
 
-              </tr>
-            ))}
+              <tbody>
 
-            </tbody>
+                {transactions.map(t=>(
+                  <tr key={t.id}>
 
-          </table>
+                    <td>{t["S No"]}</td>
+                    <td>{t.TransDate}</td>
+                    <td>{t.Description}</td>
+                    <td>{t.nature_of_deed}</td>
+                    <td>{t.doc_no}</td>
+
+                  </tr>
+                ))}
+
+              </tbody>
+
+            </table>
+
+          </div>
 
         </div>
 

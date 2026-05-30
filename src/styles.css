@@ -36,3 +36,110 @@ tr:hover{
   background:#f0f0f0;
   cursor:pointer;
 }
+.search-bar{
+  display:flex;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.search-bar input{
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:6px;
+}
+
+.badge{
+  padding:6px 10px;
+  border-radius:20px;
+  color:white;
+  font-size:12px;
+}
+
+.success{
+  background:#2e7d32;
+}
+
+.govt{
+  background:#1565c0;
+}
+
+.notrans{
+  background:#ef6c00;
+}
+
+.error{
+  background:#d32f2f;
+}
+
+.pending{
+  background:#757575;
+}
+
+.error-row{
+  background:#ffe5e5;
+}
+
+.error-row:hover{
+  background:#ffcfcf;
+}
+
+.trans-btn{
+  background:#1976d2;
+  color:white;
+  border:none;
+  padding:6px 12px;
+  border-radius:20px;
+  cursor:pointer;
+}
+
+.fav-btn{
+  border:none;
+  background:none;
+  cursor:pointer;
+  font-size:18px;
+}
+
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.5);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal{
+  background:white;
+  width:90%;
+  max-width:1200px;
+  padding:20px;
+  border-radius:10px;
+  max-height:80vh;
+  overflow:auto;
+}
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.error-card{
+  border-left:5px solid red;
+}
+
+.govt-card{
+  border-left:5px solid blue;
+}
+
+.no-card{
+  border-left:5px solid orange;
+}
+
+.trans-card{
+  border-left:5px solid green;
+}
+
+.fav-card{
+  border-left:5px solid gold;
+}
