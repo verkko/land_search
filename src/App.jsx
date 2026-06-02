@@ -17,13 +17,16 @@ export default function App() {
   },[])
 
   async function loadLands(){
-
-    const { data } = await supabase
-      .from('SearchEC2')
-      .select('*')
-      .order('id',{ascending:true})
-
-    setLands(data || [])
+    try {
+      // Points to our local api route during development or relative route on Vercel production
+      const response = await fetch('/api/data?table=SearchEC2');
+      if (!response.ok) throw new Error('Network error fetching land data');
+      const data = await response.json();
+      setLands(data || []);
+    } catch (err) {
+      console.error("Dashboard error: ", err);
+      setLands([]);
+    }
   }
 
   async function showTransactions(row){
